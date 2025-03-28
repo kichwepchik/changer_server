@@ -25,6 +25,9 @@ class ActivationModel(BaseModel):
     key: str
     hwid: str
 
+class HWIDModel(BaseModel):
+    hwid: str
+
 @app.post("/add_key")
 def add_key(data: KeyModel):
     """ Добавление нового ключа в базу """
@@ -54,3 +57,14 @@ def activate_key(data: ActivationModel):
     conn.commit()
     
     return {"status": "activated"}
+
+@app.post("/check_hwid")
+def check_hwid(data: HWIDModel):
+    """ Проверка, активировано ли устройство """
+    cursor.execute("SELECT key FROM keys WHERE hwid=?", (data.hwid,))
+    result = cursor.fetchone()
+
+    if result:
+        return {"status": "verified"}
+    else:
+        raise HTTPException(status_code=400, detail="Устройство не активировано!")
